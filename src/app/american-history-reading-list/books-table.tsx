@@ -408,7 +408,7 @@ export function BooksTable({ books }: BooksTableProps) {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-73px)] p-4 md:p-6 lg:p-4">
+    <div className="flex flex-col h-[calc(100vh-73px)] px-4 md:px-6 lg:px-4 pt-4 md:pt-6 lg:pt-4 pb-0">
       {/* Search Bar, Category Filter, and Download Buttons */}
       <div className="mb-2 flex flex-col gap-4 flex-shrink-0">
         <div className="flex flex-col md:flex-row items-stretch md:items-center md:justify-between gap-4">
@@ -556,9 +556,9 @@ export function BooksTable({ books }: BooksTableProps) {
 
       {/* Table Container with Sticky Header */}
       <div className="bg-blue-950/50 rounded-xs border border-amber-200/20 shadow-lg overflow-hidden flex-1 flex flex-col min-h-0">
-        <div className="flex-1 min-w-0 overflow-hidden">
-          <div className="h-full overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
-            <table className="w-full border-collapse max-w-full" style={{ tableLayout: 'auto' }}>
+        <div className="flex-1 min-w-0 overflow-x-auto overscroll-x-none [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60" style={{ overscrollBehaviorX: 'none' }}>
+          <div className="h-full min-h-full overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
+            <table className="border-collapse" style={{ tableLayout: 'auto', minWidth: '100%' }}>
               <thead className="sticky top-0 z-10 bg-blue-950/95 backdrop-blur-sm">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id} className="border-b border-amber-200/40">
@@ -634,7 +634,7 @@ export function BooksTable({ books }: BooksTableProps) {
       </div>
 
       {/* Pagination Controls */}
-      <div className="mt-4 flex items-center justify-between gap-4 flex-wrap flex-shrink-0">
+      <div className="sticky bottom-0 mt-4 pt-4 flex items-center justify-between gap-4 flex-wrap flex-shrink-0 bg-blue-950/95 backdrop-blur-sm border-t border-amber-200/20 -mx-4 md:-mx-6 lg:-mx-4 px-4 md:px-6 lg:px-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))', bottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-center gap-2" style={fontStyle}>
           <button
             onClick={() => table.setPageIndex(0)}
