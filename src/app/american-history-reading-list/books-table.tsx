@@ -27,6 +27,9 @@ import {
   ArrowUp,
   ArrowDown,
   X,
+  Filter,
+  Check,
+  ChevronDown,
 } from 'lucide-react';
 import type { Book } from './types';
 
@@ -53,6 +56,18 @@ export function BooksTable({ books }: BooksTableProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set<string>();
+    books.forEach((book) => {
+      if (book.category && book.category.trim()) {
+        categories.add(book.category);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [books]);
 
   const columns = useMemo<ColumnDef<Book>[]>(
     () => [
@@ -88,7 +103,7 @@ export function BooksTable({ books }: BooksTableProps) {
         accessorKey: 'title',
         header: 'Title',
         cell: ({ row }) => (
-          <div className="p-3 text-amber-100 font-semibold text-sm leading-snug" style={fontStyle}>
+          <div className="p-3 text-amber-100 font-semibold text-xs leading-snug" style={fontStyle}>
             {row.getValue('title')}
           </div>
         ),
@@ -97,7 +112,7 @@ export function BooksTable({ books }: BooksTableProps) {
         accessorKey: 'author',
         header: 'Author',
         cell: ({ row }) => (
-          <div className="p-3 text-amber-100/90 text-sm leading-snug" style={fontStyle}>
+          <div className="p-3 text-amber-100/90 text-xs leading-snug" style={fontStyle}>
             {row.getValue('author')}
           </div>
         ),
@@ -106,7 +121,7 @@ export function BooksTable({ books }: BooksTableProps) {
         accessorKey: 'firstPublished',
         header: 'First Published',
         cell: ({ row }) => (
-          <div className="p-3 text-amber-100/90 text-sm" style={fontStyle}>
+          <div className="p-3 text-amber-100/90 text-xs" style={fontStyle}>
             {row.getValue('firstPublished')}
           </div>
         ),
@@ -115,10 +130,15 @@ export function BooksTable({ books }: BooksTableProps) {
         accessorKey: 'category',
         header: 'Category',
         cell: ({ row }) => (
-          <div className="p-3 text-amber-100/90 text-sm leading-snug" style={fontStyle}>
+          <div className="p-3 text-amber-100/90 text-xs leading-snug" style={fontStyle}>
             {row.getValue('category')}
           </div>
         ),
+        filterFn: (row, columnId, filterValue: string[]) => {
+          if (!filterValue || filterValue.length === 0) return true;
+          const category = row.getValue(columnId) as string;
+          return filterValue.includes(category);
+        },
       },
       {
         accessorKey: 'isbn13',
@@ -136,12 +156,12 @@ export function BooksTable({ books }: BooksTableProps) {
           const description = row.getValue('description') as string;
           const isTruncated = description && description.length > 150;
           return (
-            <div className="p-3 text-amber-100/80 text-sm leading-relaxed">
+            <div className="p-3 text-amber-100/80 text-xs leading-relaxed">
               <div className="line-clamp-3">{description}</div>
               {isTruncated && (
                 <button
                   onClick={() => setSelectedBook(row.original)}
-                  className="mt-3 w-full px-3 py-1.5 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-xs font-medium text-center"
+                  className="mt-3 w-full px-3 py-1.5 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-xs font-medium text-center cursor-pointer"
                   style={fontStyle}
                 >
                   Read full description
@@ -182,7 +202,7 @@ export function BooksTable({ books }: BooksTableProps) {
                   href={buyLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm inline-block text-xs font-medium"
+                  className="px-3 py-1.5 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm inline-block text-xs font-medium cursor-pointer"
                   style={fontStyle}
                 >
                   Buy
@@ -223,6 +243,28 @@ export function BooksTable({ books }: BooksTableProps) {
       },
     },
   });
+
+  function handleCategoryToggle(category: string) {
+    const newSelected = new Set(selectedCategories);
+    if (newSelected.has(category)) {
+      newSelected.delete(category);
+    } else {
+      newSelected.add(category);
+    }
+    setSelectedCategories(newSelected);
+
+    const categoryFilter = table.getColumn('category');
+    if (newSelected.size === 0) {
+      categoryFilter?.setFilterValue(undefined);
+    } else {
+      categoryFilter?.setFilterValue(Array.from(newSelected));
+    }
+  }
+
+  function handleClearCategoryFilter() {
+    setSelectedCategories(new Set());
+    table.getColumn('category')?.setFilterValue(undefined);
+  }
 
   function handleExportPDF() {
     try {
@@ -299,7 +341,7 @@ export function BooksTable({ books }: BooksTableProps) {
         margin: { top: 35 },
       });
 
-      const fileName = `patriots-reading-list-${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = `american-history-reading-list-${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(fileName);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -354,7 +396,7 @@ export function BooksTable({ books }: BooksTableProps) {
       const url = URL.createObjectURL(blob);
 
       link.setAttribute('href', url);
-      link.setAttribute('download', `patriots-reading-list-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `american-history-reading-list-${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -367,45 +409,148 @@ export function BooksTable({ books }: BooksTableProps) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-73px)] p-4 md:p-6 lg:p-4">
-      {/* Search Bar and Download Buttons */}
-      <div className="mb-2 flex flex-col md:flex-row items-stretch md:items-center gap-4 flex-shrink-0">
-        <div className="relative w-full md:flex-1 md:max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-amber-200/60" />
-          <input
-            type="text"
-            value={String(globalFilter ?? '')}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            placeholder="Search all columns..."
-            className="w-full pl-10 pr-10 py-2 text-xs font-medium bg-amber-200/10 border border-amber-200/30 rounded-xs text-amber-100 placeholder:text-amber-200/50 focus:outline-none focus:ring-2 focus:ring-amber-200/50 focus:border-amber-200/50 transition-all"
-            style={fontStyle}
-          />
-          {globalFilter && (
+      {/* Search Bar, Category Filter, and Download Buttons */}
+      <div className="mb-2 flex flex-col gap-4 flex-shrink-0">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center md:justify-between gap-4">
+          <div className="relative w-full md:flex-1 md:max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-amber-200/60" />
+            <input
+              type="text"
+              value={String(globalFilter ?? '')}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              placeholder="Search all columns..."
+              className="w-full pl-10 pr-10 py-2 text-xs font-medium bg-amber-200/10 border border-amber-200/30 rounded-xs text-amber-100 placeholder:text-amber-200/50 focus:outline-none focus:ring-2 focus:ring-amber-200/50 focus:border-amber-200/50 transition-all"
+              style={fontStyle}
+            />
+            {globalFilter && (
+              <button
+                onClick={() => setGlobalFilter('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-200/60 hover:text-amber-200 transition-colors cursor-pointer"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col md:flex-row gap-2 md:gap-4 w-full md:w-auto">
             <button
-              onClick={() => setGlobalFilter('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-200/60 hover:text-amber-200 transition-colors"
-              aria-label="Clear search"
+              onClick={handleExportPDF}
+              className="px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
+              style={fontStyle}
             >
-              <X className="w-4 h-4" />
+              <Download className="w-4 h-4" />
+              Download PDF
             </button>
-          )}
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
+              style={fontStyle}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Download CSV
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-2 md:gap-4 w-full md:w-auto">
-          <button
-            onClick={handleExportPDF}
-            className="px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-xs font-semibold flex items-center justify-center gap-2"
-            style={fontStyle}
-          >
-            <Download className="w-4 h-4" />
-            Download PDF
-          </button>
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-xs font-semibold flex items-center justify-center gap-2"
-            style={fontStyle}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            Download CSV
-          </button>
+
+        {/* Category Filter */}
+        <div className="relative">
+          {/* Desktop: Dropdown */}
+          <div className="hidden md:block relative">
+            <button
+              onClick={() => setIsCategoryFilterOpen(!isCategoryFilterOpen)}
+              className={`w-full px-4 py-2 bg-amber-200/10 border rounded-xs text-xs font-medium flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                selectedCategories.size > 0
+                  ? 'border-amber-200/70 bg-amber-200/20 text-amber-100'
+                  : 'border-amber-200/30 text-amber-100/90 hover:border-amber-200/50 hover:bg-amber-200/15'
+              }`}
+              style={fontStyle}
+            >
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-amber-200/60" />
+                <span>
+                  {selectedCategories.size === 0
+                    ? 'Filter by Category'
+                    : `${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'} selected`}
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-amber-200/60 transition-transform ${isCategoryFilterOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {isCategoryFilterOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsCategoryFilterOpen(false)} />
+                <div className="absolute top-full left-0 right-0 mt-2 bg-blue-950 border border-amber-200/30 rounded-xs shadow-xl z-50 max-h-[400px] overflow-hidden flex flex-col">
+                  <div className="px-4 py-3 border-b border-amber-200/20 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-amber-100 uppercase tracking-wider" style={fontStyle}>
+                      Categories
+                    </span>
+                    {selectedCategories.size > 0 && (
+                      <button
+                        onClick={handleClearCategoryFilter}
+                        className="text-xs text-amber-200/70 hover:text-amber-200 transition-colors cursor-pointer"
+                        style={fontStyle}
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                  <div className="overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
+                    {uniqueCategories.map((category) => {
+                      const isSelected = selectedCategories.has(category);
+                      return (
+                        <button
+                          key={category}
+                          onClick={() => handleCategoryToggle(category)}
+                          className={`w-full px-4 py-2.5 text-left text-xs flex items-start gap-3 hover:bg-amber-200/10 transition-colors cursor-pointer ${
+                            isSelected ? 'bg-amber-200/15' : ''
+                          }`}
+                          style={fontStyle}
+                        >
+                          <div
+                            className={`mt-0.5 flex-shrink-0 w-4 h-4 border rounded-xs flex items-center justify-center transition-all ${
+                              isSelected ? 'bg-amber-200/30 border-amber-200/70' : 'border-amber-200/40 bg-transparent'
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 text-amber-100" />}
+                          </div>
+                          <span
+                            className={`flex-1 leading-relaxed ${isSelected ? 'text-amber-100' : 'text-amber-100/80'}`}
+                          >
+                            {category}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Mobile: Button that opens modal */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsCategoryFilterOpen(true)}
+              className={`w-full px-4 py-2 bg-amber-200/10 border rounded-xs text-xs font-medium flex items-center justify-between gap-2 cursor-pointer ${
+                selectedCategories.size > 0
+                  ? 'border-amber-200/70 bg-amber-200/20 text-amber-100'
+                  : 'border-amber-200/30 text-amber-100/90'
+              }`}
+              style={fontStyle}
+            >
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-amber-200/60" />
+                <span>
+                  {selectedCategories.size === 0
+                    ? 'Filter by Category'
+                    : `${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'} selected`}
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-amber-200/60" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -494,7 +639,7 @@ export function BooksTable({ books }: BooksTableProps) {
           <button
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
-            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm"
+            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm cursor-pointer"
             style={fontStyle}
             aria-label="First page"
           >
@@ -503,7 +648,7 @@ export function BooksTable({ books }: BooksTableProps) {
           <button
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm"
+            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm cursor-pointer"
             style={fontStyle}
             aria-label="Previous page"
           >
@@ -512,7 +657,7 @@ export function BooksTable({ books }: BooksTableProps) {
           <button
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm"
+            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm cursor-pointer"
             style={fontStyle}
             aria-label="Next page"
           >
@@ -521,7 +666,7 @@ export function BooksTable({ books }: BooksTableProps) {
           <button
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
-            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm"
+            className="p-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-200/20 text-xs transition-all hover:border-amber-200/70 hover:shadow-sm cursor-pointer"
             style={fontStyle}
             aria-label="Last page"
           >
@@ -539,6 +684,81 @@ export function BooksTable({ books }: BooksTableProps) {
           </div>
         </div>
       </div>
+
+      {/* Category Filter Modal (Mobile) */}
+      {isCategoryFilterOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50 flex flex-col bg-black/60 backdrop-blur-sm"
+          onClick={() => setIsCategoryFilterOpen(false)}
+        >
+          <div
+            className="bg-blue-950 border-t border-amber-200/30 rounded-t-lg shadow-2xl flex-1 flex flex-col mt-auto max-h-[80vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-4 border-b border-amber-200/20 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-amber-200/60" />
+                <h3 className="text-sm font-semibold text-amber-100 uppercase tracking-wider" style={fontStyle}>
+                  Filter by Category
+                </h3>
+              </div>
+              <div className="flex items-center gap-3">
+                {selectedCategories.size > 0 && (
+                  <button
+                    onClick={handleClearCategoryFilter}
+                    className="text-xs text-amber-200/70 hover:text-amber-200 transition-colors cursor-pointer"
+                    style={fontStyle}
+                  >
+                    Clear all
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsCategoryFilterOpen(false)}
+                  className="p-1 text-amber-200/60 hover:text-amber-200 hover:bg-amber-200/10 rounded-xs transition-colors cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
+              {uniqueCategories.map((category) => {
+                const isSelected = selectedCategories.has(category);
+                return (
+                  <button
+                    key={category}
+                    onClick={() => handleCategoryToggle(category)}
+                    className={`w-full px-4 py-3 text-left text-sm flex items-start gap-3 hover:bg-amber-200/10 transition-colors border-b border-amber-200/10 cursor-pointer ${
+                      isSelected ? 'bg-amber-200/15' : ''
+                    }`}
+                    style={fontStyle}
+                  >
+                    <div
+                      className={`mt-0.5 flex-shrink-0 w-5 h-5 border rounded-xs flex items-center justify-center transition-all ${
+                        isSelected ? 'bg-amber-200/30 border-amber-200/70' : 'border-amber-200/40 bg-transparent'
+                      }`}
+                    >
+                      {isSelected && <Check className="w-3.5 h-3.5 text-amber-100" />}
+                    </div>
+                    <span className={`flex-1 leading-relaxed ${isSelected ? 'text-amber-100' : 'text-amber-100/80'}`}>
+                      {category}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="px-4 py-4 border-t border-amber-200/20 flex-shrink-0">
+              <button
+                onClick={() => setIsCategoryFilterOpen(false)}
+                className="w-full px-4 py-2.5 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-sm font-semibold cursor-pointer"
+                style={fontStyle}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Description Modal */}
       {selectedBook && (
@@ -599,7 +819,7 @@ export function BooksTable({ books }: BooksTableProps) {
                   </div>
                   <button
                     onClick={() => setSelectedBook(null)}
-                    className="p-2 text-amber-200/60 hover:text-amber-200 hover:bg-amber-200/10 rounded-xs transition-colors z-10"
+                    className="p-2 text-amber-200/60 hover:text-amber-200 hover:bg-amber-200/10 rounded-xs transition-colors z-10 cursor-pointer"
                     aria-label="Close"
                   >
                     <X className="w-5 h-5" />
@@ -628,7 +848,7 @@ export function BooksTable({ books }: BooksTableProps) {
                     href={selectedBook.buyLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-sm font-medium whitespace-nowrap flex-shrink-0"
+                    className="px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-sm font-medium whitespace-nowrap flex-shrink-0 cursor-pointer"
                     style={fontStyle}
                   >
                     Buy Book

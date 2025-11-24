@@ -9,8 +9,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'New Site Under Construction',
-  description: 'Site under construction',
+  title: 'Pax Americana - American Culture Advocate',
+  description: 'Pax Americana - American Culture Advocate',
 };
 
 export default function RootLayout({
