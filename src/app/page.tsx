@@ -14,7 +14,7 @@ export default function Home() {
             priority
           />
         </div>
-        <h1 className="text-2xl text-amber-100 font-semibold font-playfair-display-sc">New site under construction</h1>
+        <h1 className="text-2xl text-amber-100 font-semibold">New site under construction</h1>
       </div>
     </div>
   );
