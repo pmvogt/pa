@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { getBooksFromLocalFile } from './lib/books-data';
 import { BooksTable } from './books-table';
 
-export default async function PatriotsReadingList() {
+export default async function AmericanHistoryReadingList() {
   const books = await getBooksFromLocalFile();
 
   return (

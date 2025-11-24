@@ -763,25 +763,25 @@ export function BooksTable({ books }: BooksTableProps) {
       {/* Description Modal */}
       {selectedBook && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setSelectedBook(null)}
         >
           <div
-            className="bg-blue-950 border border-amber-200/30 rounded-xs shadow-2xl w-[900px] h-[600px] overflow-hidden flex"
+            className="bg-blue-950 border-0 md:border border-amber-200/30 rounded-none md:rounded-xs shadow-2xl w-full h-full md:w-[900px] md:h-[600px] overflow-hidden flex flex-col md:flex-row"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Left Panel - Thumbnail */}
-            <div className="flex-shrink-0 w-80 md:w-96 relative">
+            <div className="flex-shrink-0 w-full h-64 md:h-auto md:w-80 md:w-96 relative border-b md:border-b-0 md:border-r border-amber-200/20">
               {selectedBook.thumbnail && selectedBook.thumbnail.trim() && isValidUrl(selectedBook.thumbnail) ? (
                 <Image
                   src={selectedBook.thumbnail}
                   alt={selectedBook.title}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 320px, 384px"
+                  sizes="(max-width: 768px) 100vw, 384px"
                 />
               ) : (
-                <div className="w-full h-full bg-amber-200/10 border-r border-amber-200/20 flex items-center justify-center">
+                <div className="w-full h-full bg-amber-200/10 flex items-center justify-center">
                   <span className="text-amber-200/40 text-xs text-center px-2" style={fontStyle}>
                     No image
                   </span>
@@ -792,7 +792,7 @@ export function BooksTable({ books }: BooksTableProps) {
             {/* Right Panel */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
               {/* Header with Blurred Background */}
-              <div className="relative px-6 py-4 border-b border-amber-200/20">
+              <div className="relative px-4 md:px-6 py-3 md:py-4 border-b border-amber-200/20">
                 {/* Blurred Background Image */}
                 {selectedBook.thumbnail && selectedBook.thumbnail.trim() && isValidUrl(selectedBook.thumbnail) && (
                   <div className="absolute inset-0 overflow-hidden">
@@ -809,17 +809,17 @@ export function BooksTable({ books }: BooksTableProps) {
                 )}
                 {/* Header Content */}
                 <div className="relative flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-semibold text-amber-100 mb-1" style={fontStyle}>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg md:text-xl font-semibold text-amber-100 mb-1" style={fontStyle}>
                       {selectedBook.title}
                     </h2>
-                    <p className="text-sm text-amber-200/80" style={fontStyle}>
+                    <p className="text-xs md:text-sm text-amber-200/80" style={fontStyle}>
                       by {selectedBook.author}
                     </p>
                   </div>
                   <button
                     onClick={() => setSelectedBook(null)}
-                    className="p-2 text-amber-200/60 hover:text-amber-200 hover:bg-amber-200/10 rounded-xs transition-colors z-10 cursor-pointer"
+                    className="p-2 text-amber-200/60 hover:text-amber-200 hover:bg-amber-200/10 rounded-xs transition-colors z-10 cursor-pointer flex-shrink-0"
                     aria-label="Close"
                   >
                     <X className="w-5 h-5" />
@@ -828,17 +828,17 @@ export function BooksTable({ books }: BooksTableProps) {
               </div>
 
               {/* Content */}
-              <div className="px-6 py-4 overflow-y-auto flex-1 [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
+              <div className="px-4 md:px-6 py-3 md:py-4 overflow-y-auto flex-1 [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
                 <div className="text-amber-100/90 text-sm leading-relaxed whitespace-pre-wrap" style={fontStyle}>
                   {selectedBook.description}
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="px-6 py-4 border-t border-amber-200/20 flex items-start justify-between gap-4">
+              <div className="px-4 md:px-6 py-3 md:py-4 border-t border-amber-200/20 flex flex-col md:flex-row items-start justify-between gap-3 md:gap-4">
                 <div className="flex flex-col gap-1 text-xs text-amber-200/70" style={fontStyle}>
                   {selectedBook.category && <span>{selectedBook.category}</span>}
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                     {selectedBook.firstPublished && <span>Published: {selectedBook.firstPublished}</span>}
                     {selectedBook.pageCount && <span>{selectedBook.pageCount} pages</span>}
                   </div>
@@ -848,7 +848,7 @@ export function BooksTable({ books }: BooksTableProps) {
                     href={selectedBook.buyLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-sm font-medium whitespace-nowrap flex-shrink-0 cursor-pointer"
+                    className="w-full md:w-auto px-4 py-2 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-sm font-medium text-center md:text-left md:whitespace-nowrap flex-shrink-0 cursor-pointer"
                     style={fontStyle}
                   >
                     Buy Book
