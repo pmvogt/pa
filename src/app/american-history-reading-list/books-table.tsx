@@ -154,11 +154,11 @@ export function BooksTable({ books }: BooksTableProps) {
         header: 'Description',
         cell: ({ row }) => {
           const description = row.getValue('description') as string;
-          const isTruncated = description && description.length > 150;
+          const hasDescription = description && description.trim().length > 0;
           return (
             <div className="p-3 text-amber-100/80 text-xs leading-relaxed">
               <div className="line-clamp-3">{description}</div>
-              {isTruncated && (
+              {hasDescription && (
                 <button
                   onClick={() => setSelectedBook(row.original)}
                   className="mt-3 w-full px-3 py-1.5 bg-amber-200/20 hover:bg-amber-200/30 text-amber-100 rounded-xs border border-amber-200/50 transition-all hover:border-amber-200/70 hover:shadow-sm text-xs font-medium text-center cursor-pointer"
@@ -556,9 +556,9 @@ export function BooksTable({ books }: BooksTableProps) {
 
       {/* Table Container with Sticky Header */}
       <div className="bg-blue-950/50 rounded-xs border border-amber-200/20 shadow-lg overflow-hidden flex-1 flex flex-col min-h-0">
-        <div className="overflow-x-auto flex-1 [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
-          <div className="h-full overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
-            <table className="w-full border-collapse" style={{ tableLayout: 'auto' }}>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="h-full overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:rgb(255_237_213_/_0.4)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-blue-950/40 [&::-webkit-scrollbar-thumb]:bg-amber-200/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-amber-200/60">
+            <table className="w-full border-collapse max-w-full" style={{ tableLayout: 'auto' }}>
               <thead className="sticky top-0 z-10 bg-blue-950/95 backdrop-blur-sm">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id} className="border-b border-amber-200/40">
